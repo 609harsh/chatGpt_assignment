@@ -1,3 +1,6 @@
-# WXT + React
+# Linkedin Chrome Extension
 
-This template should help get you started developing with React in WXT.
+
+https://github.com/user-attachments/assets/04eb8d5c-7fda-4aab-b20e-952edb2881f9
+
+
