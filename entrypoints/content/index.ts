@@ -1,19 +1,5 @@
-import './styles.css';
-import ReactDOM from 'react-dom/client';
-import App from './App.tsx';
-
-
-let generateButton = ``
-
-let testbutton=`<div>
-		<button className="input-button"style="background-color:blue; color:white; display:none;">Input</button>
-		<button className="regenerate-button"style="background-color:blue; color:white; display:none;" disabled>Regenerate</button>	
-	</div>`
-
-
-
 export default defineContentScript({
-  matches: ["*://www.linkedin.com/*"],
+  matches: ["*://www.linkedin.com/messaging/*"],
   cssInjectionMode: "ui",
 
   async main(ctx) {
@@ -28,24 +14,25 @@ export default defineContentScript({
             if (chatbox) {
                 
                 if (!document.querySelector('#custom-icon')) {
-                  
+                  //Input Button
                   const inputButton = document.createElement('button')
-                  // inputButton.style.display='none'
                   inputButton.id = 'input-button'
                   inputButton.textContent = "Input"
 
+                  //Regenerate Button
                   const regenerateButton = document.createElement('button')
                   regenerateButton.className = 'regenerate-button'
                   regenerateButton.textContent = "Regenerate"
-                  // regenerateButton.style.display = 'none';
                   regenerateButton.disabled=true
 
+                  //Generate Button
                   const generateButton = document.createElement('button');
                   generateButton.textContent = 'Generate Key';
                   generateButton.style.display = 'block';
                   generateButton.style.float = 'right';
                   generateButton.style.clear='right'
 
+                  //Block on Inout and Regen. Button
                   const buttonblock = document.createElement('div')
                   buttonblock.style.display = 'none';
                   buttonblock.style.alignItems = 'end';
@@ -53,17 +40,16 @@ export default defineContentScript({
                   buttonblock.style.gap = '4px'
                   buttonblock.style.width='100%'
                   
-                  // buttonblock.appendChild(generateButton)
                   buttonblock.appendChild(inputButton)
                   buttonblock.appendChild(regenerateButton);
-                  
-                  
 
+                  //Prompt Text
                   const text1 = document.createElement('p')
                   text1.id = "text1";
                   text1.style.textAlign='end'
                   text1.style.display = 'none';
 
+                  //Reply Text
                   const text2 = document.createElement('p');
                   text2.id = "text2";
                   text2.style.textAlign='start'
@@ -71,6 +57,7 @@ export default defineContentScript({
                   text2.style.marginBottom = '2px'
                   text2.style.marginTop='2px'
                   
+                  //Prompt Text Box
                   const input = document.createElement('input');
                   input.className='modal-input'
                   input.type = 'text';
@@ -92,6 +79,7 @@ export default defineContentScript({
                   modal.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.1)';
                   modal.style.zIndex = '1000';
 
+                  //Modal 
                   const modalbox = document.createElement('div')
                   modalbox.id = 'modal-box'
                   modalbox.style.display = 'none'
@@ -112,13 +100,10 @@ export default defineContentScript({
                   modal.appendChild(generateButton);
                   modalbox.appendChild(modal)
                   container.appendChild(modalbox);
-                  
-                  
-                  
-                  // document.body.appendChild(modal);
 
+                  //Ai icon
                   const icon = document.createElement('img');
-                  icon.src = chrome.runtime.getURL(`frame.png`);
+                  icon.src = chrome.runtime.getURL('frame.png');
                   icon.id = 'custom-icon';
                   icon.alt = 'Icon';
                   icon.style.cursor = 'pointer';
@@ -129,7 +114,7 @@ export default defineContentScript({
                   icon.style.width = '20px';
                   icon.style.height = '20px';
 
-                    
+                  
                   const chatboxContainer = chatbox.parentElement;
                   chatboxContainer.style.position = 'relative'; 
                   chatboxContainer.appendChild(icon);
@@ -140,7 +125,6 @@ export default defineContentScript({
                     icon.style.display = 'none';  
                   });
 
-                  
                   icon.addEventListener('mousedown', (event) => {
                     event.preventDefault();  
                     modal.style.display = 'block';  
@@ -172,12 +156,10 @@ export default defineContentScript({
                     // regenerateButton.style.display = 'none';
                     modalbox.style.display = 'none';
                   })
-                  
-                    
+
                     window.addEventListener('click', (event) => {
                         if (event.target === modalbox) {
                           modalbox.style.display = 'none';
-                          
                         }
                     });
                 }
@@ -185,14 +167,23 @@ export default defineContentScript({
         }
         window.addEventListener('load', () => {
           addIconToChat();
-          const observer = new MutationObserver(addIconToChat);
+          const observer = new MutationObserver(debounce(addIconToChat, 300));
           observer.observe(document.body, { childList: true, subtree: true });
         });
       },
-    });
-
-    
+    })
     ui.mount();
-
   },
 });
+
+function debounce(func, wait) {
+  let timeout;
+  return function(...args) {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+}
